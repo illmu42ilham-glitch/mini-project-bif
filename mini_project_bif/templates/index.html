@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCBI GC Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧬 Bioinfo Pipeline Analyzer</h1>
+            <p>Integrasi Langsung Database NCBI Nuccore untuk Mini Project</p>
+        </header>
+
+        <section class="search-section card">
+            <form method="POST" action="/">
+                <label for="search_query">Masukkan Nama Protein / Organisme / ID Aksesi:</label>
+                <div class="search-box">
+                    <input type="text" id="search_query" name="search_query" placeholder="Contoh: Insulin, H5N1, NC_045512..." value="{{ query }}" required>
+                    <button type="submit">Jalankan Analisis</button>
+                </div>
+            </form>
+        </section>
+
+        {% if error %}
+            <div class="alert error">{{ error }}</div>
+        {% endif %}
+
+        {% if results %}
+            <section class="top-section">
+                <h2>🏆 3 Sekuens Terbaik (Peringkat GC Content)</h2>
+                <div class="grid-container">
+                    {% for item in top_3 %}
+                        <div class="card top-card">
+                            <div class="badge">Rank {{ loop.index }}</div>
+                            <h3 title="{{ item.full_header }}">{{ item.short_header }}</h3>
+                            <p><strong>Panjang Basa:</strong> {{ item.length }} bp</p>
+                            <div class="gc-value">{{ item.gc_content }}% <span class="lbl">GC</span></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <div class="grid-main">
+                <div class="card chart-card">
+                    <h2>📊 Grafik Distribusi GC</h2>
+                    <div class="chart-container">
+                        <img src="data:image/png;base64,{{ chart_url }}" alt="Grafik GC Content">
+                    </div>
+                </div>
+
+                <div class="card action-card">
+                    <h2>💾 Ekspor Data Pipeline</h2>
+                    <p>Seluruh hasil perhitungan frekuensi nukleotida terstruktur dari <strong>List</strong> dan <strong>Dictionary</strong> telah sukses diekspor ke file CSV.</p>
+                    <a href="/download" class="btn-download">Unduh File (.CSV)</a>
+                </div>
+            </div>
+
+            <section class="table-section card">
+                <h2>📋 Hasil Parsing List & Perhitungan Frekuensi Nukleotida (Dictionary)</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama Sekuens (Header)</th>
+                                <th>Total Basa</th>
+                                <th>GC (%)</th>
+                                <th>A</th>
+                                <th>T</th>
+                                <th>G</th>
+                                <th>C</th>
+                                <th>N</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in results %}
+                            <tr>
+                                <td class="txt-left" title="{{ item.full_header }}">{{ item.short_header }}</td>
+                                <td>{{ item.length }}</td>
+                                <td class="bold text-blue">{{ item.gc_content }}%</td>
+                                <td>{{ item.frequencies.A }}</td>
+                                <td>{{ item.frequencies.T }}</td>
+                                <td>{{ item.frequencies.G }}</td>
+                                <td>{{ item.frequencies.C }}</td>
+                                <td>{{ item.frequencies.N }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        {% endif %}
+    </div>
+</body>
+</html>
